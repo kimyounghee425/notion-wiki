@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: notion-wiki-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notionwiki
+    ports:
+      - "5436:5432" # 호스트 5436 → 컨테이너 5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notionwiki"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

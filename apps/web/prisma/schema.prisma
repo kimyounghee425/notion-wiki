@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Notion 페이지 1개 = 로컬 캐시. 볼 때마다 Notion 재호출 못 하니 캐시 필수.
+model Note {
+  id             String   @id @default(cuid())
+  notionId       String   @unique
+  title          String
+  url            String
+  markdown       String   @default("") // 본문 (fetchPageMarkdown 결과). 목록만 동기화 시 빈 값
+  lastEditedTime DateTime // Notion 의 값 → 증분 동기화 핵심 키
+  syncedAt       DateTime @default(now())
+  chunks         Chunk[]
+
+  @@index([lastEditedTime])
+}
+
+/// 긴 노트 분할 (AI 입력 단위 + 출처 추적). Phase 2 에서 채운다.
+model Chunk {
+  id      String @id @default(cuid())
+  noteId  String
+  note    Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  order   Int
+  content String
+}
+
+/// AI 생성 위키 결과. Phase 2.
+model WikiPage {
+  id        String   @id @default(cuid())
+  scope     String // 프로젝트/주제 이름
+  content   String // 출처 링크 포함 markdown
+  status    String   @default("draft") // draft | accepted | rejected
+  sources   String[] // 출처 notionId 배열
+  createdAt DateTime @default(now())
+}
+
+/// 동기화 메타 (단일 행).
+model SyncState {
+  id           String    @id @default("singleton")
+  lastSyncedAt DateTime?
+}
