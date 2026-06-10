@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# create-next-app 이 권장한 빌드 스킵 (image용 sharp 등). 모노레포 루트로 끌어올림.
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver

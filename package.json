@@ -1,0 +1,20 @@
+{
+  "name": "personal-assistant",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Notion LLM 위키 — 모노레포 루트",
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "lint": "pnpm --filter web lint",
+    "probe": "tsx scratch/notion-probe.ts"
+  },
+  "devDependencies": {
+    "@notionhq/client": "^2.2.15",
+    "@types/node": "^22.10.2",
+    "dotenv": "^16.4.7",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
