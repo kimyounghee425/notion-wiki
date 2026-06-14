@@ -100,6 +100,35 @@ async function walk(
         case "child_page":
           lines.push(`${pad}📄 (하위 페이지) ${data.title}`);
           break;
+
+        // 레이아웃/컨테이너 블록 — 자체 텍스트 없음. 주석 없이 자식만 재귀시킨다.
+        case "column_list":
+        case "column":
+        case "synced_block":
+        case "table":
+          break;
+
+        case "table_row": {
+          const cells = (data?.cells ?? [])
+            .map((c: any[]) => richText(c).replace(/\|/g, "\\|"))
+            .join(" | ");
+          lines.push(`${pad}| ${cells} |`);
+          break;
+        }
+        case "image": {
+          const url = data?.external?.url ?? data?.file?.url ?? "";
+          lines.push(`${pad}![${richText(data?.caption)}](${url})`);
+          break;
+        }
+        case "bookmark":
+        case "embed":
+        case "link_preview":
+          lines.push(`${pad}[${data?.url ?? "링크"}](${data?.url ?? ""})`);
+          break;
+        case "equation":
+          lines.push(`${pad}$${data?.expression ?? ""}$`);
+          break;
+
         default:
           // 처리 안 한 타입은 표시만 (어떤 타입을 더 채울지 파악용)
           lines.push(`${pad}<!-- 미지원 블록: ${type} -->`);
@@ -121,7 +150,9 @@ async function walk(
     cursor = res.has_more ? res.next_cursor : undefined;
   } while (cursor);
 
-  return lines.join("\n");
+  // 블록 사이를 빈 줄로 구분 → 마크다운에서 각 블록이 독립 줄/문단으로 렌더된다.
+  // (한 줄 개행만 쓰면 연속된 블록이 한 문단으로 합쳐져 한 줄에 붙어버림)
+  return lines.join("\n\n");
 }
 
 export async function blocksToMarkdown(
